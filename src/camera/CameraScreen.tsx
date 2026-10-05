@@ -6,9 +6,6 @@ import { AIStatusBar } from '@/components/AIStatusBar';
 import { CompositionOverlay } from '@/components/CompositionOverlay';
 import { AITip } from '@/components/AITip';
 import { ShutterButton } from '@/components/ShutterButton';
-import { CameraModeSelector } from '@/components/CameraModeSelector';
-import { TopBar } from '@/components/TopBar';
-import { BottomBar } from '@/components/BottomBar';
 
 export const CameraScreen = () => {
   const navigate = useNavigate();
@@ -66,10 +63,19 @@ export const CameraScreen = () => {
       
       <div className="absolute inset-0 bg-charcoal-black/10" />
       
-      <TopBar 
-        onSwitchCamera={switchCamera}
-        onSettings={() => {}}
-      />
+      <div className="absolute top-0 left-0 right-0 p-4 pt-safe-top flex justify-between items-center">
+        <button 
+          onClick={switchCamera}
+          className="text-fog-white/80 hover:text-fog-white transition-colors"
+          aria-label="Switch camera"
+        >
+          ↻
+        </button>
+        
+        <div className="flex items-center gap-4">
+          <div className="text-fog-white text-xs tracking-label">AI ●</div>
+        </div>
+      </div>
       
       <AIStatusBar />
 
@@ -87,7 +93,7 @@ export const CameraScreen = () => {
       />
 
       <div className="absolute bottom-0 left-0 right-0 pb-safe-bottom">
-        <BottomBar>
+        <div className="flex justify-between items-center px-8 py-6">
           <button className="text-concrete-grey hover:text-fog-white transition-colors">
             <span className="text-xl">✛</span>
           </button>
@@ -103,12 +109,23 @@ export const CameraScreen = () => {
           <button className="text-concrete-grey hover:text-fog-white transition-colors">
             <span className="text-xl">◉</span>
           </button>
-        </BottomBar>
+        </div>
 
-        <CameraModeSelector 
-          mode={mode}
-          onModeChange={setMode}
-        />
+        <div className="flex justify-center gap-6 mb-4">
+          {['PHOTO', 'PORTRAIT', 'CINEMATIC', 'NIGHT', 'DOCUMENT', 'SELF'].map(m => (
+            <button
+              key={m}
+              onClick={() => setMode(m.toLowerCase() as any)}
+              className={`text-[10px] tracking-[0.1em] ${
+                mode.toUpperCase() === m 
+                  ? 'text-safety-orange' 
+                  : 'text-concrete-grey'
+              }`}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
