@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-background: #1C1E1F;
+    --color-surface: #3E4144;
+    --color-text-primary: #DCDCD8;
+    --color-text-secondary: #8C8F8A;
+    --color-accent-cool: #4A5A66;
+    --color-accent-sharp: #FF5A1F;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--color-background);
+    color: var(--color-text-primary);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .shutter-button {
+    @apply w-20 h-20 rounded-full border-2 border-safety-orange
+           bg-transparent flex items-center justify-center
+           transition-all duration-150 ease-out;
+    &:active {
+      @apply scale-90 border-4;
+    }
+  }
+
+  .shutter-inner {
+    @apply w-10 h-10 rounded-full bg-safety-orange;
+  }
+
+  .grid-line {
+    @apply absolute bg-steel-blue opacity-12;
+  }
+
+  .focus-ring {
+    @apply outline outline-2 outline-steel-blue outline-offset-2;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.3s ease-out both;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}

@@ -1,0 +1,119 @@
+import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { PALETTE } from '@aesthetic/spec';
+import { photoStorage } from '@/storage/photoStorage';
+import { aiProvider } from '@/ai/AIProvider';
+import { SIGNATURE_EDIT } from '@aesthetic/spec';
+
+export const PhotoReview = () => {
+  const navigate = useNavigate();
+  const [photoData, setPhotoData] = useState<string | null>(null);
+  const [isEdited, setIsEdited] = useState(true);
+  const [analysis, setAnalysis] = useState<any>(null);
+  const [isAnalysing, setIsAnalysing] = useState(false);
+
+  useEffect(() => {
+    const data = sessionStorage.getItem('lastPhoto');
+    if (data) {
+      setPhotoData(data);
+    } else {
+      navigate('/');
+    }
+  }, [navigate]);
+
+  const handleSave = async () => {
+    if (!photoData) return;
+    
+    const photo = await photoStorage.savePhoto({
+      dataUrl: photoData,
+      mode: 'photo',
+      editPreset: SIGNATURE_EDIT.name,
+      favourite: false,
+    });
+    
+    navigate('/gallery');
+  };
+
+  const handleAnalyse = async () => {
+    if (!photoData || isAnalysing) return;
+    setIsAnalysing(true);
+    
+    try {
+      const result = await aiProvider.analysePhoto(photoData);
+      setAnalysis(result);
+    } catch (err) {
+      console.error('Analysis failed', err);
+    } finally {
+      setIsAnalysing(false);
+    }
+  };
+
+  if (!photoData) {
+    return <div className="fixed inset-0 bg-charcoal-black" />;
+  }
+
+  return (
+    <div className="fixed inset-0 bg-charcoal-black flex flex-col">
+      <div className="flex-1 relative">
+        <img 
+          src={isEdited ? photoData : photoData}
+          alt="Captured photo"
+          className="w-full h-full object-contain"
+        />
+        
+        <div className="absolute top-4 left-4 right-4 flex justify-between">
+          <button 
+            onClick={() => navigate('/')}
+            className="px-4 py-2 bg-graphite-grey/80 backdrop-blur-xs text-fog-white text-sm"
+          >
+            RETAKE
+          </button>
+          <div className="px-4 py-2 bg-graphite-grey/80 backdrop-blur-xs text-fog-white text-sm">
+            {isEdited ? 'EDITED' : 'RAW'}
+          </div>
+        </div>
+
+        <button
+          onClick={() => setIsEdited(!isEdited)}
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-graphite-grey text-fog-white text-sm tracking-label"
+        >
+          TOGGLE RAW/EDIT
+        </button>
+      </div>
+
+      <div className="bg-graphite-grey p-4 flex gap-2 justify-around">
+        <button 
+          onClick={handleSave}
+          className="px-6 py-3 bg-safety-orange text-charcoal-black font-medium"
+          style={{ backgroundColor: PALETTE.accentSharp }}
+        >
+          SAVE
+        </button>
+        <button 
+          onClick={handleAnalyse}
+          disabled={isAnalysing}
+          className="px-6 py-3 bg-graphite-grey text-fog-white disabled:opacity-40"
+        >
+          {isAnalysing ? 'ANALYSING...' : 'ANALYSE'}
+        </button>
+        <button className="px-6 py-3 bg-graphite-grey text-fog-white">
+          EDIT
+        </button>
+      </div>
+
+      {analysis && (
+        <div className="absolute bottom-24 left-4 right-4 bg-charcoal-black/90 backdrop-blur-xs p-4 rounded-lg">
+          <div className="text-fog-white text-sm mb-2">ANALYSIS</div>
+          <div className="text-concrete-grey text-xs space-y-1">
+            {analysis.strengths.map((s: string, i: number) => (
+              <div key={i}>✓ {s}</div>
+            ))}
+            {analysis.improvements.map((s: string, i: number) => (
+              <div key={i}>→ {s}</div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
