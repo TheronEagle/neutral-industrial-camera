@@ -4,6 +4,9 @@ compatibility_date = "2025-01-01"
 [vars]
 AI_PROVIDER = "mock"
 LOG_LEVEL = "warn"
+# FreeLLMAPI gateway URL - required for vision analysis
+# Set this in Cloudflare dashboard to enable real AI analysis
+# Format: https://your-gateway-url.com/v1
 FREELLMAPI_GATEWAY_URL = ""
 
 [assets]
