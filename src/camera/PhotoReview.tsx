@@ -11,6 +11,7 @@ export const PhotoReview = () => {
   const [isEdited, setIsEdited] = useState(true);
   const [analysis, setAnalysis] = useState<any>(null);
   const [isAnalysing, setIsAnalysing] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   useEffect(() => {
     const data = sessionStorage.getItem('lastPhoto');
@@ -37,12 +38,16 @@ export const PhotoReview = () => {
   const handleAnalyse = async () => {
     if (!photoData || isAnalysing) return;
     setIsAnalysing(true);
+    setAnalysisError(null);
     
     try {
       const result = await aiProvider.analysePhoto(photoData);
       setAnalysis(result);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Analysis failed', err);
+      setAnalysisError(
+        err.message || 'AI analysis failed'
+      );
     } finally {
       setIsAnalysing(false);
     }
@@ -104,14 +109,25 @@ export const PhotoReview = () => {
       {analysis && (
         <div className="absolute bottom-24 left-4 right-4 bg-charcoal-black/90 backdrop-blur-xs p-4 rounded-lg">
           <div className="text-fog-white text-sm mb-2">ANALYSIS</div>
-          <div className="text-concrete-grey text-xs space-y-1">
-            {analysis.strengths.map((s: string, i: number) => (
-              <div key={i}>✓ {s}</div>
-            ))}
-            {analysis.improvements.map((s: string, i: number) => (
-              <div key={i}>→ {s}</div>
-            ))}
-          </div>
+          {analysis.error ? (
+            <div className="text-concrete-grey text-xs">{analysis.error}</div>
+          ) : (
+            <div className="text-concrete-grey text-xs space-y-1">
+              {analysis.strengths.map((s: string, i: number) => (
+                <div key={i}>✓ {s}</div>
+              ))}
+              {analysis.improvements.map((s: string, i: number) => (
+                <div key={i}>→ {s}</div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      
+      {analysisError && (
+        <div className="absolute bottom-64 left-4 right-4 bg-charcoal-black/90 backdrop-blur-xs p-4 rounded-lg">
+          <div className="text-fog-white text-sm mb-2">ANALYSIS ERROR</div>
+          <div className="text-concrete-grey text-xs">{analysisError}</div>
         </div>
       )}
     </div>
