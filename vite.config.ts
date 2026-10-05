@@ -28,7 +28,7 @@ export default defineConfig({
           },
         ],
       },
-      includeAssests: ['favicon.svg', 'apple-touch-icon.svg', 'icons/*.png'],
+      includeAssets: ['favicon.svg', 'apple-touch-icon.svg', 'icons/*.png'],
       manifest: {
         name: 'Neutral Industrial Camera',
         short_name: 'NICamera',
