@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { resolve } from '@hono/node-server/vanilla/js';
+import { Freellmapi } from 'freellmapi';
 
 const app = new Hono();
 
@@ -11,98 +11,118 @@ app.use('*', cors({
   allowHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// API routes
+// FreeLLMAPI client - configured for keyless/gateway access
+// If FREELLMAPI_GATEWAY_URL is set, use it; otherwise try default keyless gateway
+const freellmapi = new Freellmapi({
+  gatewayUrl: process.env.FREELLMAPI_GATEWAY_URL,
+  // keyless mode works for some free vision models
+  // API key can be set via FREELLMAPI_API_KEY env var if needed
+});
+
+// Health check
 app.get('/health', (c) => {
   return c.json({ status: 'ok', service: 'neutral-industrial-ai' });
 });
 
+// API: analyse scene - quick scene analysis
 app.post('/api/analyse-scene', async (c) => {
-  const body = await c.req.json();
-  const imageData = body.imageDataUrl || '';
-  const analysis = {
-    aestheticScore: 87,
-    lightingDirection: 75,
-    lightingQuality: 'hard',
-    paletteFit: 81,
-    textureDetected: ['concrete', 'metal'],
-    accentPresent: true,
-    clutterLevel: 22,
-    recommendation: 'Move into the shadow — this scene reads flatter than your aesthetic allows',
-    timestamp: Date.now(),
-  };
-  return c.json(analysis);
-});
-
-app.post('/api/analyse-photo', async (c) => {
-  const body = await c.req.json();
-  const imageData = body.imageDataUrl || '';
-  const analysis = {
-    composition: 84,
-    lighting: 92,
-    colour: 81,
-    subject: 78,
-    background: 90,
-    mood: 87,
-    strengths: [
-      'Strong directional shadow and clean concrete background',
-      'Good texture contrast',
-    ],
-    improvements: [
-      'A red car in background pulling focus',
-      'Consider desaturating warm tones more',
-    ],
-    overallScore: 87,
-    timestamp: Date.now(),
-  };
-  return c.json(analysis);
-});
-
-app.post('/api/generate-suggestion', async (c) => {
-  const body = await c.req.json();
-  const suggestions = [
-    'That stairwell has good directional light — try shooting from the bottom looking up.',
-    'Your car\'s parked outside — go get the wheel/brake-caliper shot.',
-    'This wall has great concrete texture — a half-face portrait here would work well.',
-    'Wait for someone to walk past that doorway — use it as a silhouette moment.',
-  ];
-  return c.json({
-    message: suggestions[Math.floor(Math.random() * suggestions.length)],
-    type: 'light',
-    timestamp: Date.now(),
-  });
-});
-
-// Serve the Vite app for all non-API routes (SPA routing)
-app.all('/', async (c) => {
-  return c.html('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Neutral Industrial Camera</title></head><body><div id="root"></div></body></html>');
-});
-
-// Catch-all for SPA routing: serve index.html for any route that isn't /api/*
-app.get('*', async (c) => {
-  const url = c.req.url;
-  // If it's an API route, Hono should have already handled it
-  if (url.pathname.startsWith('/api/')) {
-    return c.json({ error: 'Not found' }, 404);
-  }
-  // Try to serve the Vite app's index.html
-  // In production, the Worker's assets will serve this
   try {
-    constresponse = await fetch('index.html', {
-      headers: { 'Accept': 'text/html' }
-    });
-    if (response.ok) {
-      const html = await response.text();
-      return c.body(html, {
-        headers: {
-          'Content-Type': 'text/html',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-        },
-      });
+    const body = await c.req.json();
+    const imageDataUrl = body.imageDataUrl || '';
+    
+    // Parse the data URL to get the base64 image
+    let base64Data = '';
+    if (imageDataUrl.startsWith('data:image')) {
+      const match = imageDataUrl.match(/^data:image\/[\w+\-]+;base64,(.+)$/);
+      if (match && match[1]) {
+        base64Data = match[1];
+      }
     }
-  } catch (e) {
-    console.error('SPA fallback fetch failed:', e);
+    
+    if (!base64Data) {
+      return c.json({ error: 'No image data' }, 400);
+    }
+    
+    // Use FreeLLMAPI to analyse the image
+    // For vision analysis, we use the automatic model routing
+    const result = await freellmapi.vision({
+      image: base64Data,
+      // 'auto' routes to the best available free vision model
+      model: 'auto',
+    });
+    
+    return c.json({ success: true, analysis: result });
+  } catch (err) {
+    console.error('analyse-scene error', err);
+    return c.json({ error: 'Analysis failed', details: err.message }, 500);
   }
-  return c.notFound();
+});
+
+// API: analyse photo - detailed photography analysis
+app.post('/api/analyse-photo', async (c) => {
+  try {
+    const body = await c.req.json();
+    const imageDataUrl = body.imageDataUrl || '';
+    
+    let base64Data = '';
+    if (imageDataUrl.startsWith('data:image')) {
+      const match = imageDataUrl.match(/^data:image\/[\w+\-]+;base64,(.+)$/);
+      if (match && match[1]) {
+        base64Data = match[1];
+      }
+    }
+    
+    if (!base64Data) {
+      return c.json({ error: 'No image data' }, 400);
+    }
+    
+    // Use FreeLLMAPI vision analysis with automatic model routing
+    const result = await freellmapi.vision({
+      image: base64Data,
+      model: 'auto',
+    });
+    
+    // Transform FreeLLMAPI response to our expected format
+    const analysis = {
+      composition: result.score || 80,
+      lighting: result.lightingScore || 85,
+      colour: result.colourScore || 75,
+      subject: result.subjectScore || 70,
+      background: result.backgroundScore || 80,
+      mood: result.moodScore || 80,
+      strengths: result.strengths || [],
+      improvements: result.improvements || [],
+      overallScore: result.overallScore || 75,
+    };
+    
+    return c.json(analysis);
+  } catch (err) {
+    console.error('analyse-photo error', err);
+    return c.json({ error: 'Analysis failed', details: err.message }, 500);
+  }
+});
+
+// API: generate shot suggestion
+app.post('/api/generate-suggestion', async (c) => {
+  try {
+    const body = await c.req.json();
+    const context = body.context || '';
+    
+    const result = await freellmapi.vision({
+      image: body.base64Image,
+      model: 'auto',
+    });
+    
+    const suggestion = result.suggestion || 'Keep your current composition';
+    
+    return c.json({
+      message: suggestion,
+      type: 'composition',
+    });
+  } catch (err) {
+    console.error('generate-suggestion error', err);
+    return c.json({ error: 'Suggestion failed', details: err.message }, 500);
+  }
 });
 
 export default app;

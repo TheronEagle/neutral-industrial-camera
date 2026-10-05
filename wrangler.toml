@@ -4,6 +4,7 @@ compatibility_date = "2025-01-01"
 [vars]
 AI_PROVIDER = "mock"
 LOG_LEVEL = "warn"
+FREELLMAPI_GATEWAY_URL = ""
 
 [assets]
 directory = "./dist"
