@@ -1,7 +1,9 @@
 name = "neutral-industrial-camera"
-main = "workers/index.ts"
 compatibility_date = "2025-01-01"
 
-[vars]
-AI_PROVIDER = "mock"
-LOG_LEVEL = "warn"
+[env.production]
+name = "neutral-industrial-camera"
+vars = { AI_PROVIDER = "mock", LOG_LEVEL = "warn" }
+
+[assets]
+directory = "./dist"
