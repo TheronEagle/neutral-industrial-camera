@@ -1,9 +1,9 @@
 name = "neutral-industrial-camera"
 compatibility_date = "2025-01-01"
 
-[env.production]
-name = "neutral-industrial-camera"
-vars = { AI_PROVIDER = "mock", LOG_LEVEL = "warn" }
+[vars]
+AI_PROVIDER = "mock"
+LOG_LEVEL = "warn"
 
 [assets]
 directory = "./dist"
