@@ -2,8 +2,6 @@ name = "neutral-industrial-camera"
 main = "workers/index.ts"
 compatibility_date = "2025-01-01"
 
-[env.production]
-vars = { AI_PROVIDER = "mock", LOG_LEVEL = "warn" }
-
-[env.development]
-vars = { AI_PROVIDER = "mock", LOG_LEVEL = "debug" }
+[vars]
+AI_PROVIDER = "mock"
+LOG_LEVEL = "warn"
