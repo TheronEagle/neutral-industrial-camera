@@ -2,14 +2,14 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { PALETTE } from '@aesthetic/spec';
 import { photoStorage } from '@/storage/photoStorage';
-import { aiProvider } from '@/ai/AIProvider';
+import { aiProvider, LiveAnalysisUnavailable, PhotoAnalysis } from '@/ai/AIProvider';
 import { SIGNATURE_EDIT } from '@aesthetic/spec';
 
 export const PhotoReview = () => {
   const navigate = useNavigate();
   const [photoData, setPhotoData] = useState<string | null>(null);
   const [isEdited, setIsEdited] = useState(true);
-  const [analysis, setAnalysis] = useState<any>(null);
+  const [analysis, setAnalysis] = useState<PhotoAnalysis | null>(null);
   const [isAnalysing, setIsAnalysing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
 
@@ -39,15 +39,16 @@ export const PhotoReview = () => {
     if (!photoData || isAnalysing) return;
     setIsAnalysing(true);
     setAnalysisError(null);
-    
+
     try {
       const result = await aiProvider.analysePhoto(photoData);
       setAnalysis(result);
-    } catch (err: any) {
-      console.error('Analysis failed', err);
-      setAnalysisError(
-        err.message || 'AI analysis failed'
-      );
+    } catch (err) {
+      if (err instanceof LiveAnalysisUnavailable) {
+        setAnalysisError(err.analysis.message || 'Live AI analysis unavailable.');
+      } else {
+        setAnalysisError('Live AI analysis unavailable.');
+      }
     } finally {
       setIsAnalysing(false);
     }
@@ -108,19 +109,49 @@ export const PhotoReview = () => {
 
       {analysis && (
         <div className="absolute bottom-24 left-4 right-4 bg-charcoal-black/90 backdrop-blur-xs p-4 rounded-lg">
-          <div className="text-fog-white text-sm mb-2">ANALYSIS</div>
-          {analysis.error ? (
-            <div className="text-concrete-grey text-xs">{analysis.error}</div>
-          ) : (
-            <div className="text-concrete-grey text-xs space-y-1">
-              {analysis.strengths.map((s: string, i: number) => (
-                <div key={i}>✓ {s}</div>
-              ))}
-              {analysis.improvements.map((s: string, i: number) => (
-                <div key={i}>→ {s}</div>
-              ))}
+          <div className="flex items-baseline justify-between mb-2">
+            <span className="text-fog-white text-sm">ANALYSIS</span>
+            <span
+              className="text-[10px] uppercase"
+              style={{
+                letterSpacing: '0.1em',
+                color:
+                  analysis.source === 'freellmapi'
+                    ? PALETTE.accentCool
+                    : PALETTE.highlight,
+              }}
+            >
+              {analysis.source === 'freellmapi'
+                ? `FREEllmAPI · ${analysis.model ?? 'model'}`
+                : analysis.source === 'mock'
+                  ? 'DEMO DATA — NO AI'
+                  : 'LOCAL — NO AI'}
+            </span>
+          </div>
+
+          {analysis.source === 'mock' && (
+            <div
+              className="text-[11px] mb-2"
+              style={{ color: PALETTE.accentSharp }}
+            >
+              {analysis.message}
             </div>
           )}
+
+          <div className="text-concrete-grey text-xs space-y-1">
+            {analysis.strengths.length === 0 && analysis.improvements.length === 0 ? (
+              <div>No structured feedback returned.</div>
+            ) : (
+              <>
+                {analysis.strengths.map((s, i) => (
+                  <div key={`s-${i}`}>✓ {s}</div>
+                ))}
+                {analysis.improvements.map((s, i) => (
+                  <div key={`i-${i}`}>→ {s}</div>
+                ))}
+              </>
+            )}
+          </div>
         </div>
       )}
       

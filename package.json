@@ -11,18 +11,18 @@
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "test": "vitest",
     "test:run": "vitest run",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc -p tsconfig.json && tsc -p tsconfig.worker.json",
     "deploy:production": "npm run build && npx wrangler deploy --env production"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.0",
-    "freellmapi": "^0.7.0",
     "hono": "^4.6.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.0.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261005.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.0.0",

@@ -7,12 +7,31 @@ import { CompositionOverlay } from '@/components/CompositionOverlay';
 import { AITip } from '@/components/AITip';
 import { ShutterButton } from '@/components/ShutterButton';
 
+type CameraModeId = 'photo' | 'portrait' | 'cinematic' | 'night' | 'document' | 'self';
+
+const MODES: string[] = ['PHOTO', 'PORTRAIT', 'CINEMATIC', 'NIGHT', 'DOCUMENT', 'SELF'];
+
 export const CameraScreen = () => {
   const navigate = useNavigate();
   const { videoRef, cameraState, startCamera, switchCamera, capturePhoto } = useCamera();
-  const [mode, setMode] = useState<'photo' | 'portrait' | 'cinematic' | 'night' | 'document' | 'self'>('photo');
+  const [mode, setMode] = useState<CameraModeId>('photo');
   const [showGrid, setShowGrid] = useState(true);
   const [isCapturing, setIsCapturing] = useState(false);
+
+  // SELF always uses the front camera, so the control is not a dead label.
+  useEffect(() => {
+    if (mode === 'self' && cameraState.facingMode !== 'user') {
+      void startCamera('user');
+    } else if (
+      mode !== 'self' &&
+      mode !== 'portrait' &&
+      cameraState.facingMode === 'user'
+    ) {
+      void startCamera('environment');
+    }
+    // Intentionally keyed on mode only: re-running on facingMode would loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
 
   useEffect(() => {
     startCamera('environment');
@@ -36,15 +55,28 @@ export const CameraScreen = () => {
 
   if (cameraState.error) {
     return (
-      <div className="fixed inset-0 bg-charcoal-black flex flex-col items-center justify-center p-6">
-        <div className="text-fog-white text-center space-y-3">
-          <div className="text-2xl font-light tracking-label">CAMERA UNAVAILABLE</div>
-          <div className="text-concrete-grey text-sm">{cameraState.error}</div>
-          <button 
+      <div className="app-viewport grid place-items-center p-6">
+        <div className="max-w-xs space-y-3 text-center text-fog-white">
+          <div className="text-lg font-light tracking-label">CAMERA UNAVAILABLE</div>
+          <p className="text-sm text-concrete-grey">{cameraState.error}</p>
+          {cameraState.error === 'Camera permission denied' && (
+            <p className="text-xs text-concrete-grey">
+              Allow camera access in your browser settings, then try again.
+            </p>
+          )}
+          <button
+            type="button"
             onClick={() => startCamera(cameraState.facingMode)}
-            className="mt-6 px-6 py-3 bg-graphite-grey hover:bg-concrete-grey transition-colors text-fog-white"
+            className="mt-4 min-h-11 w-full bg-graphite-grey px-6 py-3 text-sm tracking-label text-fog-white transition-colors hover:bg-concrete-grey"
           >
-            Retry
+            RETRY
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/gallery')}
+            className="min-h-11 w-full px-6 py-3 text-sm tracking-label text-concrete-grey transition-colors"
+          >
+            OPEN GALLERY
           </button>
         </div>
       </div>
@@ -52,79 +84,104 @@ export const CameraScreen = () => {
   }
 
   return (
-    <div className="fixed inset-0 bg-charcoal-black overflow-hidden">
+    <div className="app-viewport">
       <video
         ref={videoRef}
         autoPlay
         playsInline
         muted
-        className="absolute inset-0 w-full h-full object-cover"
+        aria-label="Live camera preview"
+        className="absolute inset-0 h-full w-full object-cover"
       />
       
       <div className="absolute inset-0 bg-charcoal-black/10" />
       
-      <div className="absolute top-0 left-0 right-0 p-4 pt-safe-top flex justify-between items-center">
-        <button 
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 pt-safe-top">
+        <button
+          type="button"
           onClick={switchCamera}
-          className="text-fog-white/80 hover:text-fog-white transition-colors"
           aria-label="Switch camera"
+          className="grid h-11 w-11 place-items-center text-xl text-fog-white/80 transition-colors active:text-fog-white"
         >
           ↻
         </button>
-        
-        <div className="flex items-center gap-4">
-          <div className="text-fog-white text-xs tracking-label">AI ●</div>
+
+        <button
+          type="button"
+          onClick={() => setShowGrid((v) => !v)}
+          aria-label="Toggle composition guides"
+          aria-pressed={showGrid}
+          className={`grid h-11 w-11 place-items-center text-xl transition-colors ${
+            showGrid ? 'text-fog-white' : 'text-fog-white/40'
+          }`}
+        >
+          ⊞
+        </button>
+      </div>
+
+      <AIStatusBar status={cameraState.ready ? 'ready' : 'offline'} />
+
+      {showGrid && (
+        <div className="pointer-events-none absolute inset-0 grid place-items-center">
+          <CompositionOverlay mode={mode} palette={PALETTE} />
         </div>
-      </div>
-      
-      <AIStatusBar />
+      )}
 
-      <div className="absolute inset-0 flex items-center justify-center">
-        {showGrid && (
-          <CompositionOverlay 
-            mode={mode}
-            palette={PALETTE}
-          />
-        )}
-      </div>
-
-      <AITip 
+      <AITip
         message="Move into the shadow — this scene reads flatter than your aesthetic allows"
       />
 
       <div className="absolute bottom-0 left-0 right-0 pb-safe-bottom">
-        <div className="flex justify-between items-center px-8 py-6">
-          <button className="text-concrete-grey hover:text-fog-white transition-colors">
-            <span className="text-xl">✛</span>
-          </button>
+        <div className="px-8 py-5">
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => navigate('/gallery')}
+              aria-label="Open gallery"
+              className="grid h-11 w-11 place-items-center text-xl text-concrete-grey transition-colors active:text-fog-white"
+            >
+              ◉
+            </button>
 
-          <div className="flex flex-col items-center gap-4">
-            <ShutterButton 
+            <ShutterButton
               onClick={handleCapture}
               disabled={!cameraState.ready || isCapturing}
+              capturing={isCapturing}
             />
-            <div className="text-concrete-grey text-xs tracking-label">SHUTTER</div>
-          </div>
 
-          <button className="text-concrete-grey hover:text-fog-white transition-colors">
-            <span className="text-xl">◉</span>
-          </button>
+            <button
+              type="button"
+              onClick={switchCamera}
+              aria-label="Switch camera"
+              className="grid h-11 w-11 place-items-center text-xl text-concrete-grey transition-colors active:text-fog-white"
+            >
+              ⇄
+            </button>
+          </div>
         </div>
 
-        <div className="flex justify-center gap-6 mb-4">
-          {['PHOTO', 'PORTRAIT', 'CINEMATIC', 'NIGHT', 'DOCUMENT', 'SELF'].map(m => (
-            <button
-              key={m}
-              onClick={() => setMode(m.toLowerCase() as any)}
-              className={`text-[10px] tracking-[0.1em] ${
-                mode.toUpperCase() === m 
-                  ? 'text-safety-orange' 
-                  : 'text-concrete-grey'
-              }`}
-            >
-              {m}
-            </button>
-          ))}
+        <div
+          className="flex justify-center gap-4 overflow-x-auto px-4 pb-2"
+          role="tablist"
+          aria-label="Camera mode"
+        >
+          {MODES.map((m) => {
+            const active = mode === m;
+            return (
+              <button
+                key={m}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setMode(m.toLowerCase() as CameraModeId)}
+                className={`min-h-11 shrink-0 px-1 text-[10px] tracking-label transition-colors ${
+                  active ? 'text-safety-orange' : 'text-concrete-grey'
+                }`}
+              >
+                {m}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

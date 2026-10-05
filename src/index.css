@@ -1,31 +1,72 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+/*
+ * Palette tokens. Tailwind v4 exposes these to @theme so the utility names
+ * (bg-charcoal-black, text-fog-white, …) match the classes used in components.
+ * Values are mirrored from src/aesthetic/spec.ts — keep them identical.
+ */
+@theme {
+  --color-charcoal-black: #1c1e1f;
+  --color-graphite-grey: #3e4144;
+  --color-steel-blue: #4a5a66;
+  --color-concrete-grey: #8c8f8a;
+  --color-fog-white: #dcdcd8;
+  --color-safety-orange: #ff5a1f;
+
+  --font-body: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /*
+   * Safe-area spacing so `pt-safe-top` / `pb-safe-bottom` resolve, keeping
+   * controls clear of the Dynamic Island and the home indicator.
+   */
+  --spacing-safe-top: env(safe-area-inset-top);
+  --spacing-safe-bottom: env(safe-area-inset-bottom);
+
+  /* Generous tracking on labels mirrors the "engineered" feel. */
+  --tracking-label: 0.1em;
+  --tracking-title: 0.03em;
+
+  /* Guide lines sit at low opacity over the viewfinder. */
+  --opacity-8: 0.08;
+  --opacity-12: 0.12;
+  --opacity-85: 0.85;
+}
 
 @layer base {
   :root {
-    --color-background: #1C1E1F;
-    --color-surface: #3E4144;
-    --color-text-primary: #DCDCD8;
-    --color-text-secondary: #8C8F8A;
-    --color-accent-cool: #4A5A66;
-    --color-accent-sharp: #FF5A1F;
+    color-scheme: dark;
   }
 
-  html, body {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  html,
+  body {
     margin: 0;
     padding: 0;
-    background: var(--color-background);
-    color: var(--color-text-primary);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #1c1e1f;
+    color: #dcdcd8;
+    font-family: var(--font-body);
     -webkit-tap-highlight-color: transparent;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     overscroll-behavior: none;
   }
 
+  /*
+   * iOS Safari/PWA: prevent the whole page rubber-banding while the user
+   * pans around the camera preview, but leave explicit scroll areas alone.
+   */
+  body {
+    touch-action: manipulation;
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
@@ -34,33 +75,40 @@
 }
 
 @layer components {
-  .shutter-button {
-    @apply w-20 h-20 rounded-full border-2 border-safety-orange
-           bg-transparent flex items-center justify-center
-           transition-all duration-150 ease-out;
-    &:active {
-      @apply scale-90 border-4;
+  /*
+   * Camera shell uses dvh so it tracks the iOS URL bar collapsing, and stays
+   * pinned to the visual viewport when installed to the Home Screen.
+   */
+  .app-viewport {
+    position: fixed;
+    inset: 0;
+    height: 100dvh;
+    min-height: 100dvh;
+    background-color: #1c1e1f;
+    overflow: hidden;
+  }
+
+  .safe-top {
+    padding-top: calc(env(safe-area-inset-top) + 0.75rem);
+  }
+
+  .safe-bottom {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 0.75rem);
+  }
+
+  .status-pill {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    background-color: rgb(28 30 31 / 0.72);
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
     }
-  }
-
-  .shutter-inner {
-    @apply w-10 h-10 rounded-full bg-safety-orange;
-  }
-
-  .grid-line {
-    @apply absolute bg-steel-blue opacity-12;
-  }
-
-  .focus-ring {
-    @apply outline outline-2 outline-steel-blue outline-offset-2;
-  }
-
-  .fade-in {
-    animation: fadeIn 0.3s ease-out both;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to { opacity: 1; transform: translateY(0); }
+    50% {
+      opacity: 0.35;
+    }
   }
 }

@@ -1,13 +1,20 @@
 name = "neutral-industrial-camera"
+main = "workers/index.ts"
 compatibility_date = "2025-01-01"
 
+# Plain environment variable — NOT a secret. The gateway URL is not a credential.
+# Set the real value in Cloudflare (Pages → Settings → Environment variables,
+# or Workers → Settings → Variables and Secrets) to enable live analysis.
 [vars]
-AI_PROVIDER = "mock"
+AI_PROVIDER = "freellmapi"
 LOG_LEVEL = "warn"
-# FreeLLMAPI gateway URL - required for vision analysis
-# Set this in Cloudflare dashboard to enable real AI analysis
-# Format: https://your-gateway-url.com/v1
 FREELLMAPI_GATEWAY_URL = ""
+# Optional vision model id. Leave empty until the gateway's /v1/models roster
+# has been inspected — guessing a model name here would be fabrication.
+FREELLMAPI_VISION_MODEL = ""
 
 [assets]
 directory = "./dist"
+# SPA fallback: any route with no matching asset resolves to index.html so
+# client-side routes (/gallery, /review, /editor) never 404.
+not_found_handling = "single-page-application"
