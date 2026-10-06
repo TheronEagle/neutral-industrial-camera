@@ -1,16 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { PALETTE } from '@aesthetic/spec';
-import { photoStorage } from '@/storage/photoStorage';
+import { photoStorage, Photo } from '@/storage/photoStorage';
 import { aiProvider, LiveAnalysisUnavailable, PhotoAnalysis } from '@/ai/AIProvider';
 import { SIGNATURE_EDIT } from '@aesthetic/spec';
 
 export const PhotoReview = () => {
   const navigate = useNavigate();
   const [photoData, setPhotoData] = useState<string | null>(null);
-  const [isEdited, setIsEdited] = useState(true);
-  const [analysis, setAnalysis] = useState<PhotoAnalysis | null>(null);
   const [isAnalysing, setIsAnalysing] = useState(false);
+  const [analysis, setAnalysis] = useState<PhotoAnalysis | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -62,49 +61,41 @@ export const PhotoReview = () => {
     <div className="fixed inset-0 bg-charcoal-black flex flex-col">
       <div className="flex-1 relative">
         <img 
-          src={isEdited ? photoData : photoData}
+          src={photoData}
           alt="Captured photo"
-          className="w-full h-full object-contain"
+          className="w-full h-full object-cover"
         />
-        
-        <div className="absolute top-4 left-4 right-4 flex justify-between">
-          <button 
-            onClick={() => navigate('/')}
-            className="px-4 py-2 bg-graphite-grey/80 backdrop-blur-xs text-fog-white text-sm"
-          >
-            RETAKE
-          </button>
-          <div className="px-4 py-2 bg-graphite-grey/80 backdrop-blur-xs text-fog-white text-sm">
-            {isEdited ? 'EDITED' : 'RAW'}
+        {/* Overlay for buttons */}
+        <div className="absolute inset-0 flex flex-col">
+          <div className="absolute top-4 left-4 right-4 flex justify-between">
+            <button 
+              onClick={() => navigate('/editor')}
+              className="px-4 py-2 bg-graphite-grey/80 backdrop-blur-xs p-2 text-fog-white text-sm"
+            >
+              EDIT
+            </button>
+            <div className="px-4 py-2 bg-graphite-grey/80 backdrop-blur-xs text-fog-white text-sm">
+              EDIT
+            </div>
+          </div>
+          
+          <div className="absolute bottom-4 left-4 right-4 flex gap-2 justify-around">
+            <button 
+              onClick={handleSave}
+              className="px-6 py-3 bg-safety-orange text-charcoal-black font-medium"
+              style={{ backgroundColor: PALETTE.accentSharp }}
+            >
+              SAVE
+            </button>
+            <button 
+              onClick={handleAnalyse}
+              disabled={isAnalysing}
+              className="px-6 py-3 bg-graphite-grey text-fog-white disabled:opacity-40"
+            >
+              {isAnalysing ? 'ANALYSING...' : 'ANALYSE'}
+            </button>
           </div>
         </div>
-
-        <button
-          onClick={() => setIsEdited(!isEdited)}
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-graphite-grey text-fog-white text-sm tracking-label"
-        >
-          TOGGLE RAW/EDIT
-        </button>
-      </div>
-
-      <div className="bg-graphite-grey p-4 flex gap-2 justify-around">
-        <button 
-          onClick={handleSave}
-          className="px-6 py-3 bg-safety-orange text-charcoal-black font-medium"
-          style={{ backgroundColor: PALETTE.accentSharp }}
-        >
-          SAVE
-        </button>
-        <button 
-          onClick={handleAnalyse}
-          disabled={isAnalysing}
-          className="px-6 py-3 bg-graphite-grey text-fog-white disabled:opacity-40"
-        >
-          {isAnalysing ? 'ANALYSING...' : 'ANALYSE'}
-        </button>
-        <button className="px-6 py-3 bg-graphite-grey text-fog-white">
-          EDIT
-        </button>
       </div>
 
       {analysis && (
