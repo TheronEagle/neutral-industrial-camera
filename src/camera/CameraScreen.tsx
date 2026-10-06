@@ -11,6 +11,9 @@ type CameraModeId = 'photo' | 'portrait' | 'cinematic' | 'night' | 'document' | 
 
 const MODES: string[] = ['PHOTO', 'PORTRAIT', 'CINEMATIC', 'NIGHT', 'DOCUMENT', 'SELF'];
 
+// Only SELF mode has real functionality (switches camera). Others are informational.
+const FUNCTIONAL_MODES: CameraModeId[] = ['self'];
+
 export const CameraScreen = () => {
   const navigate = useNavigate();
   const { videoRef, cameraState, startCamera, switchCamera, capturePhoto } = useCamera();
@@ -167,16 +170,19 @@ export const CameraScreen = () => {
         >
           {MODES.map((m) => {
             const active = mode === m;
+            const isFunctional = FUNCTIONAL_MODES.includes(m.toLowerCase() as CameraModeId);
             return (
               <button
                 key={m}
                 type="button"
-                role="tab"
+                role={isFunctional ? 'tab' : 'presentation'}
                 aria-selected={active}
-                onClick={() => setMode(m.toLowerCase() as CameraModeId)}
+                aria-disabled={!isFunctional}
+                disabled={!isFunctional}
+                onClick={isFunctional ? () => setMode(m.toLowerCase() as CameraModeId) : undefined}
                 className={`min-h-11 shrink-0 px-1 text-[10px] tracking-label transition-colors ${
                   active ? 'text-safety-orange' : 'text-concrete-grey'
-                }`}
+                } ${!isFunctional ? 'opacity-40 cursor-default' : ''}`}
               >
                 {m}
               </button>

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PALETTE } from '@aesthetic/spec';
 import { photoStorage, Photo } from '@/storage/photoStorage';
 
 export const GalleryScreen = () => {
+  const navigate = useNavigate();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,7 +26,17 @@ export const GalleryScreen = () => {
   return (
     <div className="min-h-screen bg-charcoal-black">
       <div className="p-4 border-b border-graphite-grey">
-        <h1 className="text-fog-white text-xl tracking-title">GALLERY</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-fog-white text-xl tracking-title">GALLERY</h1>
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="text-concrete-grey hover:text-safety-orange text-sm font-medium"
+            aria-label="Back to camera"
+          >
+            ← Back to Camera
+          </button>
+        </div>
         <p className="text-concrete-grey text-xs mt-1">{photos.length} photos</p>
       </div>
 
@@ -43,13 +55,13 @@ export const GalleryScreen = () => {
         <div className="grid grid-cols-3 gap-0.5 p-0.5">
           {photos.map((photo) => (
             <div key={photo.id} className="aspect-square relative group">
-              <img 
-                src={photo.dataUrl} 
+              <img
+                src={photo.dataUrl}
                 alt={`Photo ${photo.timestamp}`}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors" />
-              <button 
+              <button
                 onClick={() => handleToggleFavourite(photo.id)}
                 className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
               >
