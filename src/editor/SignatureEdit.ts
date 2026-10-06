@@ -16,8 +16,8 @@ export interface EditState {
   vignette: number;
 }
 
-export const applySignatureEdit = (canvas: HTMLCanvasElement, variant: 'SIGNATURE' | 'DEEP' | 'SOFT' = 'SIGNATURE'): EditState => {
-  const preset = [SIGNATURE_EDIT, SIGNATURE_DEEP, SIGNATURE_SOFT].find(p => p.name.includes(variant)) || SIGNATURE_EDIT;
+export const applySignatureEdit = (canvas: HTMLCanvasElement, variant: string = 'SIGNATURE'): EditState => {
+  const preset = EDIT_VARIANTS.find(p => p.name === variant) || SIGNATURE_EDIT;
   
   const ctx = canvas.getContext('2d');
   if (!ctx) return preset;

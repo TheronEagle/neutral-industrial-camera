@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SIGNATURE_EDIT, SIGNATURE_DEEP, SIGNATURE_SOFT } from '@aesthetic/spec';
+import { EDIT_VARIANTS } from '@aesthetic/spec';
 import { applySignatureEdit } from './SignatureEdit';
 
 export const EditorScreen = () => {
@@ -38,11 +38,11 @@ export const EditorScreen = () => {
 
   if (!photoData) return null;
 
-  const variants = [
-    { id: 'SIGNATURE', name: 'SIGNATURE', preset: SIGNATURE_EDIT },
-    { id: 'DEEP', name: 'SIGNATURE / DEEP', preset: SIGNATURE_DEEP },
-    { id: 'SOFT', name: 'SIGNATURE / SOFT', preset: SIGNATURE_SOFT },
-  ];
+  const variants = EDIT_VARIANTS.map(p => ({
+    id: p.name,
+    name: p.name,
+    preset: p,
+  }));
 
   return (
     <div className="fixed inset-0 bg-charcoal-black flex flex-col">

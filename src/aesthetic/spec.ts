@@ -95,10 +95,142 @@ export const SIGNATURE_SOFT: EditPreset = {
   vignette: +12,
 };
 
+
+export const CONCRETE: EditPreset = {
+  name: 'CONCRETE',
+  exposure: -0.3,
+  brilliance: 0,
+  highlights: -30,
+  shadows: -40,
+  contrast: 28,
+  blackPoint: 18,
+  saturation: -30,
+  vibrance: 0,
+  warmth: -10,
+  tint: 0,
+  sharpness: 0,
+  definition: 0,
+  vignette: 10,
+};
+
+
+
+export const STEEL_BLUE: EditPreset = {
+  name: 'STEEL BLUE',
+  exposure: -0.3,
+  brilliance: 0,
+  highlights: -30,
+  shadows: -42,
+  contrast: 22,
+  blackPoint: 18,
+  saturation: -22,
+  vibrance: 0,
+  warmth: -22,
+  tint: 0,
+  sharpness: 0,
+  definition: 0,
+  vignette: 12,
+};
+
+export const MONOCHROME_ENGINEER: EditPreset = {
+  name: 'MONOCHROME ENGINEER',
+  exposure: -0.3,
+  brilliance: 0,
+  highlights: -30,
+  shadows: -45,
+  contrast: 32,
+  blackPoint: 20,
+  saturation: -42,
+  vibrance: -10,
+  warmth: -10,
+  tint: 0,
+  sharpness: 0,
+  definition: 0,
+  vignette: 15,
+};
+
+export const NIGHT_STREET: EditPreset = {
+  name: 'NIGHT STREET',
+  exposure: -0.6,
+  brilliance: 0,
+  highlights: -30,
+  shadows: -58,
+  contrast: 28,
+  blackPoint: 22,
+  saturation: -20,
+  vibrance: 0,
+  warmth: -5,
+  tint: 0,
+  sharpness: 0,
+  definition: 0,
+  vignette: 20,
+};
+
+
+
+export const GOLDEN_INDUSTRIAL: EditPreset = {
+  name: 'GOLDEN INDUSTRIAL',
+  exposure: -0.2,
+  brilliance: 0,
+  highlights: -30,
+  shadows: -35,
+  contrast: 20,
+  blackPoint: 18,
+  saturation: -20,
+  vibrance: 0,
+  warmth: 5,
+  tint: 0,
+  sharpness: 0,
+  definition: 0,
+  vignette: 10,
+};
+
+export const RAW_PORTRAIT: EditPreset = {
+  name: 'RAW PORTRAIT',
+  exposure: -0.2,
+  brilliance: 0,
+  highlights: -30,
+  shadows: -30,
+  contrast: 18,
+  blackPoint: 12,
+  saturation: -15,
+  vibrance: 0,
+  warmth: -10,
+  tint: 0,
+  sharpness: 0,
+  definition: 0,
+  vignette: 8,
+};
+
+export const ACCENT_POP: EditPreset = {
+  name: 'ACCENT POP',
+  exposure: -0.4,
+  brilliance: 0,
+  highlights: -30,
+  shadows: -45,
+  contrast: 25,
+  blackPoint: 18,
+  saturation: -25,
+  vibrance: 0,
+  warmth: -12,
+  tint: 0,
+  sharpness: 0,
+  definition: 0,
+  vignette: 14,
+};
+
+
 export const EDIT_VARIANTS: EditPreset[] = [
   SIGNATURE_EDIT,
   SIGNATURE_DEEP,
   SIGNATURE_SOFT,
+  CONCRETE,
+  STEEL_BLUE,
+  MONOCHROME_ENGINEER,
+  NIGHT_STREET,
+  GOLDEN_INDUSTRIAL,
+  RAW_PORTRAIT,
+  ACCENT_POP,
 ];
 
 // ============================================================
