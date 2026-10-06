@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { EDIT_VARIANTS } from '@aesthetic/spec';
+import { EDIT_VARIANTS, EditPreset } from '@aesthetic/spec';
 import { applySignatureEdit } from './SignatureEdit';
 
 export const EditorScreen = () => {
   const navigate = useNavigate();
   const [photoData, setPhotoData] = useState<string | null>(null);
-  const [variant, setVariant] = useState<'SIGNATURE' | 'DEEP' | 'SOFT'>('SIGNATURE');
+  const [variant, setVariant] = useState<string>(EDIT_VARIANTS[0].name);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,12 +38,6 @@ export const EditorScreen = () => {
 
   if (!photoData) return null;
 
-  const variants = EDIT_VARIANTS.map(p => ({
-    id: p.name,
-    name: p.name,
-    preset: p,
-  }));
-
   return (
     <div className="fixed inset-0 bg-charcoal-black flex flex-col">
       <div className="flex-1 relative">
@@ -59,18 +53,18 @@ export const EditorScreen = () => {
 
       <div className="bg-graphite-grey p-4">
         <div className="text-fog-white text-sm mb-3 tracking-label">EDIT VARIANT</div>
-        <div className="flex gap-2">
-          {variants.map(v => (
+        <div className="flex gap-2 overflow-x-auto">
+          {EDIT_VARIANTS.map(p => (
             <button
-              key={v.id}
-              onClick={() => setVariant(v.id as any)}
-              className={`flex-1 py-3 text-xs ${
-                variant === v.id 
+              key={p.name}
+              onClick={() => setVariant(p.name)}
+              className={`flex-1 py-3 text-xs shrink-0 whitespace-nowrap ${
+                variant === p.name 
                   ? 'bg-safety-orange text-charcoal-black' 
                   : 'bg-charcoal-black text-fog-white'
               }`}
             >
-              {v.name}
+              {p.name}
             </button>
           ))}
         </div>

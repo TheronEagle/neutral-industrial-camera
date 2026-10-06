@@ -17,6 +17,7 @@ export interface EditState {
 }
 
 export const applySignatureEdit = (canvas: HTMLCanvasElement, variant: string = 'SIGNATURE'): EditState => {
+  // Find preset by exact name match (e.g., "SIGNATURE", "SIGNATURE / DEEP", "CONCRETE", etc.)
   const preset = EDIT_VARIANTS.find(p => p.name === variant) || SIGNATURE_EDIT;
   
   const ctx = canvas.getContext('2d');
